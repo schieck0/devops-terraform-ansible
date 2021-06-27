@@ -1,0 +1,42 @@
+---
+- name: Install IIS
+  hosts: win
+
+  tasks:
+    - name: Install IIS (Web-Server only)
+      ansible.windows.win_feature:
+        name: Web-Server
+        state: present
+
+    - name: Install IIS (Web-Server and Web-Common-Http)
+      ansible.windows.win_feature:
+        name:
+        - Web-Server
+        - Web-Common-Http
+        state: present
+    
+    - name: Create Temp folder
+      ansible.windows.win_file:
+        path: C:\tmp
+        state: directory
+
+    - name: Download NET Framework CORE
+      win_get_url:
+        url: https://download.visualstudio.microsoft.com/download/pr/d0a958a1-50e7-4887-ba3d-3b80e946d7a1/f247ffeae9d13f4ffcc731c7d7b3de45/dotnet-sdk-3.1.410-win-x64.exe
+        dest: C:\tmp\netCore.exe
+
+    - name: Install NET-Framework-Core from file
+      ansible.windows.win_feature:
+        name: NET-Framework-Core
+        source: C:\tmp\netCore.exe
+        state: present
+
+    - name: Install IIS Web-Server
+      ansible.windows.win_feature:
+        name: Web-Server
+        state: present
+        restart: no
+        include_sub_features: yes
+        include_management_tools: no
+      register: win_feature
+    
